@@ -1,65 +1,74 @@
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.util.ArrayList;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.Scanner;
 
 public class OptimalPath {
-	private ArrayList<ArrayList<Integer>> grid;
+	private int[][] grid;
+	private String file;
 
 	public OptimalPath(String s) {
-		readIn(s);
+		this.file = s;
 	}
 
-	public void readIn(String s) {
-		File fileName = new File(s);
-		Scanner input = null;
-		int rowCounter = 0;
+	public String getFile() {
+		return file;
+	}
 
+	public int getRow() {
+		return grid.length;
+
+	}
+
+	public int getCol() {
+		return grid[0].length;
+	}
+
+	public void read(String fileName, int rows, int cols) {
+		Scanner inputFile = null;
 		try {
-			input = new Scanner(fileName);
-		} catch (FileNotFoundException ex) {
-			System.out.print("Unable to Open File");
-		}
-		if (!input.hasNext()) {
-			input.close();
-			throw new IllegalArgumentException("File is empty");
+			inputFile = new Scanner(new FileReader(fileName));
+		} catch (IOException ex) {
+			System.out.println("*** Cannot open " + fileName + " ***");
+			System.exit(1);
 		}
 
-		while (input.hasNextLine()) {
-			ArrayList<Integer> curRow = new ArrayList<Integer>();
-			String curLine = input.nextLine();
-			String[] values = curLine.split("\\w+");
-			for (String v : values) {
-				if (!v.isEmpty())
-					curRow.add(Integer.parseInt(v));
+		int[][] newMap = new int[rows][cols];
+
+		for (int r = 0; r < rows; r++) {
+			for (int c = 0; c < cols; c++) {
+				newMap[r][c] = inputFile.nextInt();
 			}
-			grid.add(curRow);
-			rowCounter++;
+			inputFile.nextLine();
 		}
-		input.close();
+		inputFile.close();
+		grid = newMap;
 	}
 
 	public int optimalPath(int row, int col) {
-		if (row < 0 && col < 0) {// base case if arrived
-			return 0;
+		if (row < 0 && col < 0) {// base case if arrived or if not possible
+			return grid[row][col];
 		}
 
 		else {
-			if (clearUp(row, col))
-				return grid.get(row).get(col) + optimalPath(row - 1, col);
-			if (clearLeft(row, col))
-				return grid.get(row).get(col) + optimalPath(row, col - 1);
-			else
-				return grid.get(row).get(col);
+			if (clearUp(row, col) >= 0)
+				return grid[row][col] + optimalPath(row - 1, col);
+			if (clearLeft(row, col) >= 0)
+				return grid[row][col] + optimalPath(row, col - 1);
+			return grid[row][col];
 		}
 	}
 
-	public boolean clearLeft(int row, int col) {
-		return col >= 0 && grid.get(row - 1).get(col) >= 0;
+	public int clearLeft(int row, int col) {
+		if (col >= 0 && grid[row - 1][col] >= 0)
+			return grid[row][col];
+		return -1;
 	}
 
-	public boolean clearUp(int row, int col) {
-		return row >= 0 && grid.get(row).get(col - 1) >= 0;
+	public int clearUp(int row, int col) {
+		if (grid[row][col - 1] >= 0)
+			return grid[row][col];
+		return -1;
+
 	}
 
 }
